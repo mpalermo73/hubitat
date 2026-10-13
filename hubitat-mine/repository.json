@@ -1,0 +1,14 @@
+{
+  "author": "Matt Palermo",
+  "gitHubUrl": "https://github.com/mpalermo73",
+  "packages": [
+    {
+      "id": "1b01b412-00fc-4cf5-b7da-d9770706a467",
+      "name": "MyFuelPortal Propane Integration",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/myfuelportal/packageManifest.json",
+      "description": "Tank level, gallons, usage estimate and account info for propane/fuel providers on MyFuelPortal (e.g. Heller's Gas).",
+      "tags": ["Cloud", "Monitoring"]
+    }
+  ]
+}

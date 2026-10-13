@@ -1,0 +1,29 @@
+{
+  "packageName": "MyFuelPortal Propane Integration",
+  "minimumHEVersion": "2.2.9",
+  "author": "Matt Palermo",
+  "version": "1.1.0",
+  "dateReleased": "2026-10-13",
+  "documentationLink": "https://github.com/mpalermo73/hubitat/tree/main/myfuelportal",
+  "releaseNotes": "1.1.0: usage estimate (dailyUsage, daysUntilEmpty), account info and service address on each tank, devices labelled by street.\n1.0.0: initial release.",
+  "apps": [
+    {
+      "id": "myfuelportal-manager-app",
+      "name": "MyFuelPortal Manager",
+      "namespace": "myfuelportal",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/myfuelportal/apps/myFuelPortalApp.groovy",
+      "required": true,
+      "oauth": false,
+      "primary": true
+    }
+  ],
+  "drivers": [
+    {
+      "id": "myfuelportal-tank-driver",
+      "name": "MyFuelPortal Tank",
+      "namespace": "myfuelportal",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/myfuelportal/drivers/myFuelPortalTankDriver.groovy",
+      "required": true
+    }
+  ]
+}
