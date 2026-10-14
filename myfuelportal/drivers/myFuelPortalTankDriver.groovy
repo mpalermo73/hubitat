@@ -27,6 +27,10 @@ metadata {
         attribute "daysUntilEmpty", "number"
         attribute "lastUpdated", "string"
     }
+
+    preferences {
+        input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
+    }
 }
 
 def installed() {}
@@ -36,6 +40,7 @@ def refresh() {
 }
 
 def updateTank(Map tank) {
+    if (logEnable) log.debug "updateTank: ${tank}"
     Map units = [tankLevel: "%", gallons: "gal", capacity: "gal", pricePerGallon: "\$/gal", accountBalance: "\$"]
     [tankLevel: tank.level, gallons: tank.gallons, capacity: tank.capacity, product: tank.product,
      deliveryMode: tank.deliveryMode, pricePerGallon: tank.pricePerGallon, readingDate: tank.readingDate,

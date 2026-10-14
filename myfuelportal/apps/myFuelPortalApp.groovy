@@ -31,6 +31,7 @@ def mainPage() {
         }
         section("Polling") {
             input "pollInterval", "enum", title: "Poll interval", required: true, options: ["1 Hour", "3 Hours", "6 Hours", "12 Hours", "24 Hours"], defaultValue: "12 Hours"
+            input "txtEnable", "bool", title: "Enable operation logging", defaultValue: true
             input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
         }
         if (state.lastError) {
@@ -258,8 +259,9 @@ private void updateTank(Map tank, String key, Map account) {
         String street = tank.address?.tokenize(",")?.first()?.toLowerCase()?.tokenize(" ")?.collect { it.capitalize() }?.join(" ")
         String label = "${tank.product ?: 'Propane'} Tank${street ? ' - ' + street : ''}".toString()
         child = addChildDevice("myfuelportal", "MyFuelPortal Tank", dni, [name: tank.name ?: "MyFuelPortal Tank", label: label, isComponent: false])
-        log.info "MyFuelPortal: created ${label}"
+        if (txtEnable) log.info "MyFuelPortal: created ${label}"
     }
+    if (txtEnable) log.info "MyFuelPortal: ${child.displayName}: ${tank.level}% (${tank.gallons} gal), next delivery ${tank.nextDelivery ?: 'unknown'}"
     child.updateTank(tank + account)
 }
 
