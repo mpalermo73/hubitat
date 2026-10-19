@@ -33,7 +33,9 @@ metadata {
     }
 }
 
-def installed() {}
+def installed() {
+    sendEvent(name: "tankLevel", value: 0, unit: "%")
+}
 
 def refresh() {
     parent.refresh()
