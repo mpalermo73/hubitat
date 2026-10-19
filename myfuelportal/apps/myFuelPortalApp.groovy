@@ -24,22 +24,29 @@ preferences {
 
 def mainPage() {
     dynamicPage(name: "mainPage", title: "MyFuelPortal", install: true, uninstall: true) {
-        section("Provider") {
-            input "providerDomain", "text", title: "Portal subdomain or domain — the \"youraccount\" part of youraccount.myfuelportal.com (or a full domain)", required: true
+        section(header("Provider")) {
+            input "providerDomain", "text", title: "Portal subdomain or domain", required: true
+            paragraph "<small style='color:#666'>Enter the \"youraccount\" part of youraccount.myfuelportal.com, or a full domain if your provider uses one.</small>"
+        }
+        section(header("Auth")) {
             input "username", "text", title: "Portal email", required: true
             input "password", "password", title: "Portal password", required: true
         }
-        section("Polling") {
+        section(header("Polling")) {
             input "pollInterval", "enum", title: "Poll interval", required: true, options: ["1 Hour", "3 Hours", "6 Hours", "12 Hours", "24 Hours"], defaultValue: "12 Hours"
             input "txtEnable", "bool", title: "Enable operation logging", defaultValue: true
             input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
         }
         if (state.lastError) {
-            section("Status") { paragraph "Last error: ${state.lastError}" }
+            section(header("Status")) { paragraph "Last error: ${state.lastError}" }
         } else if (state.lastSuccess) {
-            section("Status") { paragraph "Last update: ${state.lastSuccess}" }
+            section(header("Status")) { paragraph "Last update: ${state.lastSuccess}" }
         }
     }
+}
+
+private String header(String title) {
+    return "<div style='background-color:#2a4a6e;color:#fff;font-weight:bold;padding:6px 10px;border-radius:4px;margin-top:4px;'>${title}</div>"
 }
 
 def installed() {
