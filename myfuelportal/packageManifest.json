@@ -2,10 +2,10 @@
   "packageName": "MyFuelPortal Propane Integration",
   "minimumHEVersion": "2.2.9",
   "author": "Matt Palermo",
-  "version": "1.1.0",
-  "dateReleased": "2026-10-13",
+  "version": "1.2.0",
+  "dateReleased": "2026-10-19",
   "documentationLink": "https://github.com/mpalermo73/hubitat/tree/main/myfuelportal",
-  "releaseNotes": "1.1.0: usage estimate (dailyUsage, daysUntilEmpty), account info and service address on each tank, devices labelled by street.\n1.0.0: initial release.",
+  "releaseNotes": "1.2.0: separate operation/debug logging toggles, tankLevel defaults to 0% on device creation, clearer provider domain field hint (no misleading default).\n1.1.0: usage estimate (dailyUsage, daysUntilEmpty), account info and service address on each tank, devices labelled by street.\n1.0.0: initial release.",
   "apps": [
     {
       "id": "myfuelportal-manager-app",
