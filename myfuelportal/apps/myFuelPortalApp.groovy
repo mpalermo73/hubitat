@@ -25,7 +25,7 @@ preferences {
 def mainPage() {
     dynamicPage(name: "mainPage", title: "MyFuelPortal", install: true, uninstall: true) {
         section("Provider") {
-            input "providerDomain", "text", title: "Portal subdomain or domain (e.g. hellersgas or hellersgas.myfuelportal.com)", required: true, defaultValue: "hellersgas"
+            input "providerDomain", "text", title: "Portal subdomain or domain — the \"youraccount\" part of youraccount.myfuelportal.com (or a full domain)", required: true
             input "username", "text", title: "Portal email", required: true
             input "password", "password", title: "Portal password", required: true
         }
