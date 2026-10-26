@@ -5,7 +5,7 @@
   "version": "1.2.1",
   "dateReleased": "2026-10-22",
   "documentationLink": "https://github.com/mpalermo73/hubitat/tree/main/myfuelportal",
-  "releaseNotes": "1.2.1: usage estimate uses a 14-day least-squares slope (needs 3 readings) and daysUntilEmpty rounds down; battery attribute mirrors tankLevel so the tank can be charted and selected as a battery device.\n1.2.0: separate operation/debug logging toggles, tankLevel defaults to 0% on device creation, clearer provider domain field hint (no misleading default).\n1.1.0: usage estimate (dailyUsage, daysUntilEmpty), account info and service address on each tank, devices labelled by street.\n1.0.0: initial release.",
+  "releaseNotes": "1.2.1: 14-day slope usage estimate, daysUntilEmpty rounds down, battery attribute.\n1.2.0: separate operation/debug logging toggles, tankLevel defaults to 0% on device creation, clearer provider domain field hint (no misleading default).\n1.1.0: usage estimate (dailyUsage, daysUntilEmpty), account info and service address on each tank, devices labelled by street.\n1.0.0: initial release.",
   "apps": [
     {
       "id": "myfuelportal-manager-app",
