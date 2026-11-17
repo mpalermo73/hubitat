@@ -9,6 +9,14 @@
       "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/myfuelportal/packageManifest.json",
       "description": "Tank level, gallons, usage estimate and account info for propane/fuel providers on MyFuelPortal (e.g. Heller's Gas).",
       "tags": ["Cloud", "Monitoring"]
+    },
+    {
+      "id": "0f686efd-1aaa-4ca4-b814-ed163aa6244f",
+      "name": "MySubaru Connected Services",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/packageManifest.json",
+      "description": "Lock, unlock, horn/lights, remote start and door/lock/window status for Subaru vehicles on MySubaru (port of subarulink).",
+      "tags": ["Cloud", "Security", "Locks"]
     }
   ]
 }
