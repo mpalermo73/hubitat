@@ -1,0 +1,73 @@
+{
+  "packageName": "MySubaru Connected Services",
+  "minimumHEVersion": "2.2.9",
+  "author": "Matt Palermo",
+  "version": "0.1.0",
+  "dateReleased": "2026-11-07",
+  "documentationLink": "https://github.com/mpalermo73/hubitat/tree/main/subarulink",
+  "releaseNotes": "0.1.0: initial port of subarulink: parent app with one child app per login; one device per vehicle with child devices for doors/locks, windows, engine (remote start), EV charging and tires, created from what each vehicle reports. Needs an already-registered device ID.",
+  "apps": [
+    {
+      "id": "subarulink-app",
+      "name": "MySubaru",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/apps/subarulinkApp.groovy",
+      "required": true,
+      "oauth": false,
+      "primary": true
+    },
+    {
+      "id": "subarulink-account-app",
+      "name": "MySubaru Account",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/apps/subarulinkAccountApp.groovy",
+      "required": true,
+      "oauth": false,
+      "primary": false
+    }
+  ],
+  "drivers": [
+    {
+      "id": "subarulink-vehicle-driver",
+      "name": "MySubaru Vehicle",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkDriver.groovy",
+      "required": true
+    },
+    {
+      "id": "subarulink-doors-driver",
+      "name": "MySubaru Doors",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkDoorsDriver.groovy",
+      "required": true
+    },
+    {
+      "id": "subarulink-windows-driver",
+      "name": "MySubaru Windows",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkWindowsDriver.groovy",
+      "required": true
+    },
+    {
+      "id": "subarulink-engine-driver",
+      "name": "MySubaru Engine",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkEngineDriver.groovy",
+      "required": true
+    },
+    {
+      "id": "subarulink-charging-driver",
+      "name": "MySubaru Charging",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkChargingDriver.groovy",
+      "required": true
+    },
+    {
+      "id": "subarulink-tire-driver",
+      "name": "MySubaru Tire",
+      "namespace": "subarulink",
+      "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/subarulink/drivers/subarulinkTireDriver.groovy",
+      "required": true
+    }
+  ]
+}
