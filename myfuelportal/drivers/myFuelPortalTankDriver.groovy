@@ -19,6 +19,7 @@ metadata {
         attribute "readingDate", "string"
         attribute "lastDelivery", "string"
         attribute "nextDelivery", "string"
+        attribute "pendingDelivery", "string"
         attribute "address", "string"
         attribute "accountBalance", "number"
         attribute "accountNumber", "string"
@@ -48,7 +49,7 @@ def updateTank(Map tank) {
     Map units = [tankLevel: "%", gallons: "gal", capacity: "gal", pricePerGallon: "\$/gal", accountBalance: "\$"]
     [tankLevel: tank.level, gallons: tank.gallons, capacity: tank.capacity, product: tank.product,
      deliveryMode: tank.deliveryMode, pricePerGallon: tank.pricePerGallon, readingDate: tank.readingDate,
-     lastDelivery: tank.lastDelivery, nextDelivery: tank.nextDelivery, address: tank.address, accountBalance: tank.accountBalance,
+     lastDelivery: tank.lastDelivery, nextDelivery: tank.nextDelivery, pendingDelivery: tank.pendingDelivery, address: tank.address, accountBalance: tank.accountBalance,
      accountNumber: tank.accountNumber, accountName: tank.accountName, customerSince: tank.customerSince].each { k, v ->
         if (v != null) sendEvent(name: k, value: v, unit: units[k])
     }

@@ -89,21 +89,25 @@ def initialize() {
 def refresh() {
     try {
         Map cookies = login()
-        String tankPage = getPage("/Tank", cookies)
-        if (tankPage.contains('id="EmailAddress"')) throw new Exception("session not authenticated loading /Tank")
-        List tanks = parseTanks(tankPage)
+        // Home page first: it settles the session so /Tank doesn't bounce via /Customers.
         Map account = [:]
+        Map pending = null
         try {
-            account = parseAccount(getPage("/", cookies))
+            String home = getPage("/", cookies)
+            account = parseAccount(home)
+            pending = parsePending(home)
         } catch (e) {
             log.warn "MyFuelPortal: account info unavailable: ${e.message}"
         }
+        String tankPage = getPage("/Tank", cookies)
+        if (tankPage.contains('id="EmailAddress"')) throw new Exception("session not authenticated loading /Tank")
+        List tanks = parseTanks(tankPage)
         if (!tanks) log.warn "MyFuelPortal: no tanks found on ${baseUrl()}/Tank"
         Set keys = []
         tanks.eachWithIndex { tank, i ->
             String key = tank.id ?: tank.name.toLowerCase().replaceAll(/\W+/, "_")
             if (!keys.add(key)) { key = "${key}_${i}".toString(); keys.add(key) }
-            updateTank(tank, key, account)
+            updateTank(pending == null ? tank : tank + [pendingDelivery: pending[tank.name] ?: "none"], key, account)
         }
         state.remove("lastError")
         state.lastSuccess = new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone)
@@ -237,6 +241,16 @@ Map parseAccount(String html) {
         accountName: decode(match(html, /(?s)customer-information.*?class="text-larger"[^>]*>\s*(?:<strong>)?\s*([^<]+?)\s*</)),
         customerSince: isoDate(match(text, /(?i)Customer\s+Since:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/))
     ].findAll { it.value != null }
+}
+
+// Home page "Pending Deliveries" table (Created On | Tank | Product), keyed by tank name.
+Map parsePending(String html) {
+    Map pending = [:]
+    String rows = match(html, /(?s)id="pendingDeliveries".*?<tbody>(.*?)<\/tbody>/) ?: ""
+    (rows =~ /(?s)<td>\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*<\/td>\s*<td>([^<]*)<\/td>/).each { all, date, tank ->
+        pending.putIfAbsent(decode(tank).trim().replaceAll(/\s+/, " "), isoDate(date))
+    }
+    return pending
 }
 
 private String stripTags(String html) {
