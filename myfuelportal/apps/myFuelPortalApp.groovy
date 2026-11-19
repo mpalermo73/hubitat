@@ -36,7 +36,7 @@ def mainPage() {
         }
         section(header("Polling")) {
             input "pollInterval", "enum", title: "Poll interval", required: true, options: ["1 Hour", "3 Hours", "6 Hours", "12 Hours", "24 Hours"], defaultValue: "12 Hours"
-            input "updateNow", "button", title: "Update now"
+            if (app.getInstallationState() == "COMPLETE") input "updateNow", "button", title: "Update now"
             input "txtEnable", "bool", title: "Enable operation logging", defaultValue: true
             input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
         }
