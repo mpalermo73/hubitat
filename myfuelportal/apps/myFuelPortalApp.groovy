@@ -27,6 +27,8 @@ def mainPage() {
         section(header("Provider")) {
             input "providerDomain", "text", title: "Portal subdomain or domain", required: true
             paragraph "<small style='color:#666'>Enter the \"youraccount\" part of youraccount.myfuelportal.com, or a full domain if your provider uses one.</small>"
+            input "pricePerGallon", "decimal", title: "Price per gallon (\$)", required: false, range: "0..*", defaultValue: 3.00
+            paragraph "<small style='color:#666'>Used for costToFill when the portal doesn't publish a price.</small>"
         }
         section(header("Auth")) {
             input "username", "text", title: "Portal email", required: true
@@ -34,6 +36,7 @@ def mainPage() {
         }
         section(header("Polling")) {
             input "pollInterval", "enum", title: "Poll interval", required: true, options: ["1 Hour", "3 Hours", "6 Hours", "12 Hours", "24 Hours"], defaultValue: "12 Hours"
+            input "updateNow", "button", title: "Update now"
             input "txtEnable", "bool", title: "Enable operation logging", defaultValue: true
             input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
         }
@@ -47,6 +50,10 @@ def mainPage() {
 
 private String header(String title) {
     return "<div style='background-color:#2a4a6e;color:#fff;font-weight:bold;padding:6px 10px;border-radius:4px;margin-top:4px;'>${title}</div>"
+}
+
+def appButtonHandler(String btn) {
+    if (btn == "updateNow") refresh()
 }
 
 def installed() {
@@ -269,7 +276,7 @@ private void updateTank(Map tank, String key, Map account) {
         if (txtEnable) log.info "MyFuelPortal: created ${label}"
     }
     if (txtEnable) log.info "MyFuelPortal: ${child.displayName}: ${tank.level}% (${tank.gallons} gal), next delivery ${tank.nextDelivery ?: 'unknown'}"
-    child.updateTank(tank + account)
+    child.updateTank(tank + account + [manualPrice: pricePerGallon ?: 3.00])
 }
 
 // The Logs page renders HTML, so bodies are escaped; scripts/styles are dropped and the CSRF token redacted.

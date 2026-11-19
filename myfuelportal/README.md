@@ -9,10 +9,11 @@ It logs into your provider's portal, scrapes the Tank page and account balance, 
 ## Features
 
 - **Any MyFuelPortal provider:** `hellersgas` expands to `https://hellersgas.myfuelportal.com`; full or vanity domains work too.
-- **Polling:** every 1, 3, 6, 12 (default), or 24 hours, plus a `Refresh` command on each tank.
+- **Polling:** every 1, 3, 6, 12 (default), or 24 hours, plus an "Update now" button in the app and a `Refresh` command on each tank.
 - **Multiple tanks and accounts:** one `MyFuelPortal Tank` device per tank, labelled by service address (e.g. "Propane Tank - 164 Sycamore Dr") with the portal's tank name as the device name. Add one app instance per account.
-- **Attributes:** `tankLevel` (%), `battery` (% , mirrors `tankLevel`), `gallons`, `capacity`, `product`, `deliveryMode`, `pricePerGallon`, `readingDate`, `lastDelivery`, `nextDelivery`, `address`, `accountBalance`, `accountNumber`, `accountName`, `customerSince`, `dailyUsage`, `daysUntilEmpty`, `lastUpdated`.
-- **Usage estimate:** `dailyUsage` (gal/day) is a trend line fitted to the last 14 days of tank readings (minimum 3), which resists 1% gauge rounding, and restarts after each delivery (keeping the previous rate until new readings accrue); `daysUntilEmpty` is current gallons ÷ that rate, rounded down, counted down from the last reading, capped at 999 when usage is zero.
+- **Attributes:** `tankLevel` (%), `battery` (%, mirrors `tankLevel`), `gallons`, `capacity`, `product`, `deliveryMode`, `pricePerGallon`, `readingDate`, `lastDelivery`, `nextDelivery`, `address`, `accountBalance`, `accountNumber`, `accountName`, `customerSince`, `dailyUsage`, `daysUntilEmpty`, `costToFill`, `lastUpdated`.
+- **Usage estimate:** `dailyUsage` (gal/day) is a trend line fitted to the latest tank reading plus the 14 days before it (minimum 3 readings), which resists 1% gauge rounding, and restarts after each delivery (keeping the previous rate until new readings accrue); `daysUntilEmpty` is current gallons ÷ that rate, rounded down, counted down from the last reading, capped at 999 when usage is zero.
+- **Cost to fill:** `costToFill` ($) is (fill level − current gallons) × price per gallon, where the fill level is 80% of capacity for propane (or when the portal names no product) and 90% for any other fuel. The price comes from the portal when it publishes one, otherwise from the price setting in the app; an empty or 0 setting uses $3.00.
 - **Hubitat Package Manager (HPM) Ready:** Native manifest included for easy updates.
 
 ---
