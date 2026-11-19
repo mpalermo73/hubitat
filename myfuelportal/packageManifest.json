@@ -5,7 +5,7 @@
   "version": "1.3.0",
   "dateReleased": "2026-11-19",
   "documentationLink": "https://github.com/mpalermo73/hubitat/tree/main/myfuelportal",
-  "releaseNotes": "1.3.0: costToFill attribute, price per gallon setting (default $3.00), Update now button, pendingDelivery attribute.\n\nAfter Install\n---------------------------\n- open MyFuelPortal Manager from Apps\n- enter your provider's subdomain from the myfuelportal.com url you use\n- enter your portal email and password\n- click Done\n- dailyUsage and daysUntilEmpty appear in the tank's device after 3 daily readings",
+  "releaseNotes": "1.3.0: costToFill attribute, price per gallon setting (default $3.00), Update now button, pendingDelivery and ownership attributes.\n\nAfter Install\n---------------------------\n- open MyFuelPortal Manager from Apps\n- enter your provider's subdomain from the myfuelportal.com url you use\n- enter your portal email and password\n- click Done\n- dailyUsage and daysUntilEmpty appear in the tank's device after 3 daily readings",
   "apps": [
     {
       "id": "myfuelportal-manager-app",

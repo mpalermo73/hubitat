@@ -224,6 +224,7 @@ List parseTanks(String html) {
             pricePerGallon: toNumber(match(text, /\$\s*([\d,.]+)\s*\/\s*gal/)),
             readingDate: isoDate(match(text, /Reading Date:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
             lastDelivery: isoDate(match(text, /Last Delivery:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
+            ownership: decode(match(chunk, /<div>\s*([^<]+?)\s*<\/div>\s*<div>\s*Last Delivery:/)),
             nextDelivery: isoDate(match(text, /Estimated Next Delivery:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
             address: decode([match(chunk, ADDRESS_RE), match(chunk, ADDRESS_RE, 2)?.replaceAll(/\s+/, " ")].findAll().join(", ")) ?: null
         ]
