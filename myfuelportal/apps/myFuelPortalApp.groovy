@@ -66,12 +66,6 @@ def installed() {
 def updated() {
     unschedule()
     initialize()
-    if (logEnable) runIn(1800, "logsOff")
-}
-
-def logsOff() {
-    app.updateSetting("logEnable", [value: "false", type: "bool"])
-    log.info "MyFuelPortal: debug logging disabled"
 }
 
 def uninstalled() {
