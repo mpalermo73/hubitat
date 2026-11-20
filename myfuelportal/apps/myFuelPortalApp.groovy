@@ -12,11 +12,14 @@ definition(
     author: "Matt Palermo",
     description: "Integrates propane accounts hosted on MyFuelPortal into Hubitat.",
     category: "Convenience",
+    menu: "Integrations",
     iconUrl: "",
     iconX2Url: "",
     singleInstance: false,
     singleThreaded: true
 )
+
+@groovy.transform.Field static final BigDecimal DEFAULT_PRICE = 3.00
 
 preferences {
     page(name: "mainPage")
@@ -27,7 +30,7 @@ def mainPage() {
         section(header("Provider")) {
             input "providerDomain", "text", title: "Portal subdomain or domain", required: true
             paragraph "<small style='color:#666'>Enter the \"youraccount\" part of youraccount.myfuelportal.com, or a full domain if your provider uses one.</small>"
-            input "pricePerGallon", "decimal", title: "Price per gallon (\$)", required: false, range: "0..*", defaultValue: 3.00
+            input "pricePerGallon", "decimal", title: "Price per gallon (\$)", required: false, range: "0..*", defaultValue: DEFAULT_PRICE
             paragraph "<small style='color:#666'>Used for costToFill when the portal doesn't publish a price.</small>"
         }
         section(header("Auth")) {
@@ -107,7 +110,7 @@ def refresh() {
         tanks.eachWithIndex { tank, i ->
             String key = tank.id ?: tank.name.toLowerCase().replaceAll(/\W+/, "_")
             if (!keys.add(key)) { key = "${key}_${i}".toString(); keys.add(key) }
-            updateTank(pending == null ? tank : tank + [pendingDelivery: pending[tank.name] ?: "none"], key, account)
+            updateTank(pending == null ? tank : tank + [pendingDelivery: pending[tank.name?.toLowerCase()] ?: "none"], key, account)
         }
         state.remove("lastError")
         state.lastSuccess = new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone)
@@ -249,7 +252,7 @@ Map parsePending(String html) {
     Map pending = [:]
     String rows = match(html, /(?s)id="pendingDeliveries".*?<tbody>(.*?)<\/tbody>/) ?: ""
     (rows =~ /(?s)<td>\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*<\/td>\s*<td>([^<]*)<\/td>/).each { all, date, tank ->
-        pending.putIfAbsent(decode(tank).trim().replaceAll(/\s+/, " "), isoDate(date))
+        pending.putIfAbsent(decode(tank).trim().replaceAll(/\s+/, " ").toLowerCase(), isoDate(date))
     }
     return pending
 }
@@ -291,7 +294,7 @@ private void updateTank(Map tank, String key, Map account) {
         if (txtEnable) log.info "MyFuelPortal: created ${label}"
     }
     if (txtEnable) log.info "MyFuelPortal: ${child.displayName}: ${tank.level}% (${tank.gallons} gal), next delivery ${tank.nextDelivery ?: 'unknown'}"
-    child.updateTank(tank + account + [manualPrice: pricePerGallon ?: 3.00])
+    child.updateTank(tank + account + [manualPrice: pricePerGallon ?: DEFAULT_PRICE])
 }
 
 // The Logs page renders HTML, so bodies are escaped; scripts/styles are dropped and the CSRF token redacted.

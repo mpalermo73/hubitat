@@ -32,7 +32,7 @@ It logs into your provider's portal, scrapes the Tank page and account balance, 
 ### Option 2: Manual
 1. **Drivers Code** > **New Driver**, paste [`drivers/myFuelPortalTankDriver.groovy`](drivers/myFuelPortalTankDriver.groovy), save.
 2. **Apps Code** > **New App**, paste [`apps/myFuelPortalApp.groovy`](apps/myFuelPortalApp.groovy), save.
-3. **Apps** > **Add User App** > **MyFuelPortal Manager**, enter provider, email, password.
+3. Open **Integrations** and add **MyFuelPortal Manager**; enter provider, email, password.
 
 ---
 
