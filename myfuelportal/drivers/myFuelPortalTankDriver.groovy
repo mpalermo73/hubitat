@@ -19,6 +19,8 @@ metadata {
         attribute "readingDate", "string"
         attribute "lastDelivery", "string"
         attribute "nextDelivery", "string"
+        attribute "pendingDelivery", "string"
+        attribute "ownership", "string"
         attribute "address", "string"
         attribute "accountBalance", "number"
         attribute "accountNumber", "string"
@@ -26,6 +28,7 @@ metadata {
         attribute "customerSince", "string"
         attribute "dailyUsage", "number"
         attribute "daysUntilEmpty", "number"
+        attribute "costToFill", "number"
         attribute "lastUpdated", "string"
     }
 
@@ -47,11 +50,18 @@ def updateTank(Map tank) {
     Map units = [tankLevel: "%", gallons: "gal", capacity: "gal", pricePerGallon: "\$/gal", accountBalance: "\$"]
     [tankLevel: tank.level, gallons: tank.gallons, capacity: tank.capacity, product: tank.product,
      deliveryMode: tank.deliveryMode, pricePerGallon: tank.pricePerGallon, readingDate: tank.readingDate,
-     lastDelivery: tank.lastDelivery, nextDelivery: tank.nextDelivery, address: tank.address, accountBalance: tank.accountBalance,
+     lastDelivery: tank.lastDelivery, nextDelivery: tank.nextDelivery, pendingDelivery: tank.pendingDelivery, ownership: tank.ownership, address: tank.address, accountBalance: tank.accountBalance,
      accountNumber: tank.accountNumber, accountName: tank.accountName, customerSince: tank.customerSince].each { k, v ->
         if (v != null) sendEvent(name: k, value: v, unit: units[k])
     }
     if (tank.level != null) sendEvent(name: "battery", value: tank.level, unit: "%")
+    // Propane fills to 80% of capacity, liquid fuels to 90%.
+    def price = tank.pricePerGallon ?: tank.manualPrice
+    if (tank.gallons != null && tank.capacity && price) {
+        double fill = !tank.product || tank.product =~ /(?i)propane|\bLPG?\b/ ? 0.8 : 0.9
+        double cost = Math.max(0d, tank.capacity * fill - tank.gallons) * price
+        sendEvent(name: "costToFill", value: Math.round(cost * 100) / 100.0d, unit: "\$")
+    }
     if (tank.gallons != null) updateUsage(tank.readingDate ?: today(), tank.gallons, tank.capacity, tank.lastDelivery)
     sendEvent(name: "lastUpdated", value: new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone))
 }

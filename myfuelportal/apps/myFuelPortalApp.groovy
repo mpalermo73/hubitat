@@ -12,11 +12,14 @@ definition(
     author: "Matt Palermo",
     description: "Integrates propane accounts hosted on MyFuelPortal into Hubitat.",
     category: "Convenience",
+    menu: "Integrations",
     iconUrl: "",
     iconX2Url: "",
     singleInstance: false,
     singleThreaded: true
 )
+
+@groovy.transform.Field static final BigDecimal DEFAULT_PRICE = 3.00
 
 preferences {
     page(name: "mainPage")
@@ -27,6 +30,8 @@ def mainPage() {
         section(header("Provider")) {
             input "providerDomain", "text", title: "Portal subdomain or domain", required: true
             paragraph "<small style='color:#666'>Enter the \"youraccount\" part of youraccount.myfuelportal.com, or a full domain if your provider uses one.</small>"
+            input "pricePerGallon", "decimal", title: "Price per gallon (\$)", required: false, range: "0..*", defaultValue: DEFAULT_PRICE
+            paragraph "<small style='color:#666'>Used for costToFill when the portal doesn't publish a price.</small>"
         }
         section(header("Auth")) {
             input "username", "text", title: "Portal email", required: true
@@ -34,6 +39,7 @@ def mainPage() {
         }
         section(header("Polling")) {
             input "pollInterval", "enum", title: "Poll interval", required: true, options: ["1 Hour", "3 Hours", "6 Hours", "12 Hours", "24 Hours"], defaultValue: "12 Hours"
+            if (app.getInstallationState() == "COMPLETE") input "updateNow", "button", title: "Update now"
             input "txtEnable", "bool", title: "Enable operation logging", defaultValue: true
             input "logEnable", "bool", title: "Enable debug logging", defaultValue: false
         }
@@ -49,6 +55,10 @@ private String header(String title) {
     return "<div style='background-color:#2a4a6e;color:#fff;font-weight:bold;padding:6px 10px;border-radius:4px;margin-top:4px;'>${title}</div>"
 }
 
+def appButtonHandler(String btn) {
+    if (btn == "updateNow") refresh()
+}
+
 def installed() {
     initialize()
 }
@@ -56,12 +66,6 @@ def installed() {
 def updated() {
     unschedule()
     initialize()
-    if (logEnable) runIn(1800, "logsOff")
-}
-
-def logsOff() {
-    app.updateSetting("logEnable", [value: "false", type: "bool"])
-    log.info "MyFuelPortal: debug logging disabled"
 }
 
 def uninstalled() {
@@ -82,21 +86,25 @@ def initialize() {
 def refresh() {
     try {
         Map cookies = login()
-        String tankPage = getPage("/Tank", cookies)
-        if (tankPage.contains('id="EmailAddress"')) throw new Exception("session not authenticated loading /Tank")
-        List tanks = parseTanks(tankPage)
+        // Home page first: it settles the session so /Tank doesn't bounce via /Customers.
         Map account = [:]
+        Map pending = null
         try {
-            account = parseAccount(getPage("/", cookies))
+            String home = getPage("/", cookies)
+            account = parseAccount(home)
+            pending = parsePending(home)
         } catch (e) {
             log.warn "MyFuelPortal: account info unavailable: ${e.message}"
         }
+        String tankPage = getPage("/Tank", cookies)
+        if (tankPage.contains('id="EmailAddress"')) throw new Exception("session not authenticated loading /Tank")
+        List tanks = parseTanks(tankPage)
         if (!tanks) log.warn "MyFuelPortal: no tanks found on ${baseUrl()}/Tank"
         Set keys = []
         tanks.eachWithIndex { tank, i ->
             String key = tank.id ?: tank.name.toLowerCase().replaceAll(/\W+/, "_")
             if (!keys.add(key)) { key = "${key}_${i}".toString(); keys.add(key) }
-            updateTank(tank, key, account)
+            updateTank(pending == null ? tank : tank + [pendingDelivery: pending[tank.name?.toLowerCase()] ?: "none"], key, account)
         }
         state.remove("lastError")
         state.lastSuccess = new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone)
@@ -213,6 +221,7 @@ List parseTanks(String html) {
             pricePerGallon: toNumber(match(text, /\$\s*([\d,.]+)\s*\/\s*gal/)),
             readingDate: isoDate(match(text, /Reading Date:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
             lastDelivery: isoDate(match(text, /Last Delivery:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
+            ownership: decode(match(chunk, /<div>\s*([^<]+?)\s*<\/div>\s*<div>\s*Last Delivery:/)),
             nextDelivery: isoDate(match(text, /Estimated Next Delivery:\s*(\d{1,2}\/\d{1,2}\/\d{4})/)),
             address: decode([match(chunk, ADDRESS_RE), match(chunk, ADDRESS_RE, 2)?.replaceAll(/\s+/, " ")].findAll().join(", ")) ?: null
         ]
@@ -230,6 +239,16 @@ Map parseAccount(String html) {
         accountName: decode(match(html, /(?s)customer-information.*?class="text-larger"[^>]*>\s*(?:<strong>)?\s*([^<]+?)\s*</)),
         customerSince: isoDate(match(text, /(?i)Customer\s+Since:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/))
     ].findAll { it.value != null }
+}
+
+// Home page "Pending Deliveries" table (Created On | Tank | Product), keyed by tank name.
+Map parsePending(String html) {
+    Map pending = [:]
+    String rows = match(html, /(?s)id="pendingDeliveries".*?<tbody>(.*?)<\/tbody>/) ?: ""
+    (rows =~ /(?s)<td>\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*<\/td>\s*<td>([^<]*)<\/td>/).each { all, date, tank ->
+        pending.putIfAbsent(decode(tank).trim().replaceAll(/\s+/, " ").toLowerCase(), isoDate(date))
+    }
+    return pending
 }
 
 private String stripTags(String html) {
@@ -269,7 +288,7 @@ private void updateTank(Map tank, String key, Map account) {
         if (txtEnable) log.info "MyFuelPortal: created ${label}"
     }
     if (txtEnable) log.info "MyFuelPortal: ${child.displayName}: ${tank.level}% (${tank.gallons} gal), next delivery ${tank.nextDelivery ?: 'unknown'}"
-    child.updateTank(tank + account)
+    child.updateTank(tank + account + [manualPrice: pricePerGallon ?: DEFAULT_PRICE])
 }
 
 // The Logs page renders HTML, so bodies are escaped; scripts/styles are dropped and the CSRF token redacted.
