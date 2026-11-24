@@ -66,15 +66,18 @@ def updateTank(Map tank) {
     sendEvent(name: "lastUpdated", value: new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone))
 }
 
-// One sample per reading date over the last 14 days. A new lastDelivery date, or a rise beyond monitor jitter,
-// starts a new window; the last known rate carries over so daysUntilEmpty is recomputed on every poll.
+// One sample per reading date over the last 14 days, all after the last fill. The fill date is the reading day of a
+// rise beyond monitor jitter, or a newer lastDelivery date; the fill-day reading reads high, so it is skipped too.
+// The last known rate carries over so daysUntilEmpty is recomputed on every poll.
 private void updateUsage(String day, Double gallons, Double capacity, String lastDelivery) {
     List readings = state.readings ?: []
-    boolean delivered = (lastDelivery && state.lastDelivery && lastDelivery != state.lastDelivery) ||
-        (readings && gallons > readings[-1].gallons + (capacity ? capacity * 0.05 : 10))
+    boolean jump = readings && gallons > readings[-1].gallons + (capacity ? capacity * 0.05 : 10)
+    boolean newDate = lastDelivery && state.lastDelivery && lastDelivery != state.lastDelivery && lastDelivery > (state.fillDate ?: "")
     if (lastDelivery) state.lastDelivery = lastDelivery
-    if (delivered) readings = []
-    if (!readings || day > readings[-1].date) readings << [date: day, gallons: gallons]
+    if (jump || newDate) state.fillDate = jump ? day : lastDelivery
+    String fill = state.fillDate ?: ""
+    readings = readings.findAll { it.date > fill }
+    if (day > fill && (!readings || day > readings[-1].date)) readings << [date: day, gallons: gallons]
     readings = readings.findAll { daysBetween(it.date, day) <= 14 }
     state.readings = readings
 
