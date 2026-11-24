@@ -7,7 +7,7 @@
       "name": "MyFuelPortal Propane Integration",
       "category": "Integrations",
       "location": "https://raw.githubusercontent.com/mpalermo73/hubitat/main/myfuelportal/packageManifest.json",
-      "description": "Tank level, gallons, usage estimate and account info for propane/fuel providers on MyFuelPortal (e.g. Heller's Gas).",
+      "description": "Tank level, gallons, usage estimate, cost to fill, pending deliveries and account info for propane/fuel providers on MyFuelPortal (e.g. Heller's Gas).",
       "tags": ["Cloud", "Monitoring"]
     }
   ]
