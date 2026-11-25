@@ -62,40 +62,28 @@ def updateTank(Map tank) {
         double cost = Math.max(0d, tank.capacity * fill - tank.gallons) * price
         sendEvent(name: "costToFill", value: Math.round(cost * 100) / 100.0d, unit: "\$")
     }
-    if (tank.gallons != null) updateUsage(tank.readingDate ?: today(), tank.gallons, tank.capacity, tank.lastDelivery)
+    if (tank.gallons != null) updateUsage(tank.readingDate ?: today(), tank.gallons, tank.capacity)
     sendEvent(name: "lastUpdated", value: new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone))
 }
 
-// One sample per reading date over the last 14 days, all after the last fill. The fill date is the reading day of a
-// rise beyond monitor jitter, or a newer lastDelivery date; the fill-day reading reads high, so it is skipped too.
-// A new rate needs a 7-day span; until then the last known rate carries over, recomputing daysUntilEmpty on every poll.
-private void updateUsage(String day, Double gallons, Double capacity, String lastDelivery) {
+// Average daily drop over the last 14 days, one reading per date; a rise beyond gauge jitter is a fill, so that day is skipped.
+private void updateUsage(String day, Double gallons, Double capacity) {
     List readings = state.readings ?: []
-    boolean jump = readings && gallons > readings[-1].gallons + (capacity ? capacity * 0.05 : 10)
-    boolean newDate = lastDelivery && state.lastDelivery && lastDelivery != state.lastDelivery && lastDelivery > (state.fillDate ?: "")
-    if (lastDelivery) state.lastDelivery = lastDelivery
-    if (jump || newDate) state.fillDate = jump ? day : lastDelivery
-    String fill = state.fillDate ?: ""
-    readings = readings.findAll { it.date > fill }
-    if (day > fill && (!readings || day > readings[-1].date)) readings << [date: day, gallons: gallons]
+    if (!readings || day > readings[-1].date) readings << [date: day, gallons: gallons]
     readings = readings.findAll { daysBetween(it.date, day) <= 14 }
     state.readings = readings
 
-    if (readings && daysBetween(readings[0].date, readings[-1].date) >= 7) {
-        double n = readings.size()
-        List<Double> xs = readings.collect { daysBetween(readings[0].date, it.date) as double }
-        List<Double> ys = readings.collect { it.gallons as double }
-        double mx = xs.sum() / n, my = ys.sum() / n
-        double sxx = 0, sxy = 0
-        for (int i = 0; i < xs.size(); i++) {
-            sxx += (xs[i] - mx) * (xs[i] - mx)
-            sxy += (xs[i] - mx) * (ys[i] - my)
-        }
-        if (sxx > 0 && sxy <= 0) state.usage = Math.round(-sxy / sxx * 100) / 100.0d
+    double burned = 0
+    int counted = 0
+    for (int i = 1; i < readings.size(); i++) {
+        double drop = readings[i - 1].gallons - readings[i].gallons
+        if (drop < -(capacity ? capacity * 0.05 : 10)) continue
+        burned += drop
+        counted += daysBetween(readings[i - 1].date, readings[i].date)
     }
-    if (state.usage == null) return
+    if (counted < 7) return
 
-    double usage = state.usage
+    double usage = Math.max(0d, Math.round(burned / counted * 100) / 100.0d)
     long days = usage > 0 ? (Math.floor(gallons / usage) as long) - Math.max(0, daysBetween(day, today())) : 999L
     sendEvent(name: "dailyUsage", value: usage, unit: "gal/day")
     sendEvent(name: "daysUntilEmpty", value: Math.max(0L, Math.min(999L, days)), unit: "days")
