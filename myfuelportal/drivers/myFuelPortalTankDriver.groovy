@@ -66,20 +66,30 @@ def updateTank(Map tank) {
     sendEvent(name: "lastUpdated", value: new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone))
 }
 
-// Average daily drop over the last 14 days, one reading per date; a rise beyond gauge jitter is a fill, so that day is skipped.
+// Average daily drop over the last 14 days, one reading per date; a rise beyond gauge jitter is a fill, so that day and the day before are skipped.
 private void updateUsage(String day, Double gallons, Double capacity) {
     List readings = state.readings ?: []
     if (!readings || day > readings[-1].date) readings << [date: day, gallons: gallons]
     readings = readings.findAll { daysBetween(it.date, day) <= 14 }
     state.readings = readings
 
-    double burned = 0
-    int counted = 0
+    double burned = 0, lastDrop = 0
+    int counted = 0, lastDays = 0
     for (int i = 1; i < readings.size(); i++) {
         double drop = readings[i - 1].gallons - readings[i].gallons
-        if (drop < -(capacity ? capacity * 0.05 : 10)) continue
+        int days = daysBetween(readings[i - 1].date, readings[i].date)
+        if (drop < -(capacity ? capacity * 0.05 : 10)) {
+            // The day before a fill is dropped too, so a low glitch followed by its recovery nets out.
+            burned -= lastDrop
+            counted -= lastDays
+            lastDrop = 0
+            lastDays = 0
+            continue
+        }
         burned += drop
-        counted += daysBetween(readings[i - 1].date, readings[i].date)
+        counted += days
+        lastDrop = drop
+        lastDays = days
     }
     if (counted < 7) return
 
