@@ -68,7 +68,7 @@ def updateTank(Map tank) {
 
 // One sample per reading date over the last 14 days, all after the last fill. The fill date is the reading day of a
 // rise beyond monitor jitter, or a newer lastDelivery date; the fill-day reading reads high, so it is skipped too.
-// The last known rate carries over so daysUntilEmpty is recomputed on every poll.
+// A new rate needs a 7-day span; until then the last known rate carries over, recomputing daysUntilEmpty on every poll.
 private void updateUsage(String day, Double gallons, Double capacity, String lastDelivery) {
     List readings = state.readings ?: []
     boolean jump = readings && gallons > readings[-1].gallons + (capacity ? capacity * 0.05 : 10)
@@ -81,7 +81,7 @@ private void updateUsage(String day, Double gallons, Double capacity, String las
     readings = readings.findAll { daysBetween(it.date, day) <= 14 }
     state.readings = readings
 
-    if (readings.size() >= 3) {
+    if (readings && daysBetween(readings[0].date, readings[-1].date) >= 7) {
         double n = readings.size()
         List<Double> xs = readings.collect { daysBetween(readings[0].date, it.date) as double }
         List<Double> ys = readings.collect { it.gallons as double }
